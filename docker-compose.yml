@@ -1,0 +1,33 @@
+version: '3'
+services:
+  app:
+    container_name: app
+    build:
+      context: .
+      dockerfile: ./docker/python/Dockerfile
+    volumes:
+      - ./app:/app
+    tty: true
+    depends_on:
+      db:
+        condition: service_started # dbが起動、動作確認後にコンテナ起動
+    env_file:
+      - .env
+  db:
+    build:
+      context: .
+      dockerfile: ./docker/mysql/Dockerfile
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      TZ: ${TZ}
+    volumes:
+      - db_data:/var/lib/mysql
+    ports:
+      - 13306:3306 # ホストマシンのポート13306を、docker内のポート3306に接続する
+    command: mysqld --character-set-server=utf8 --collation-server=utf8_unicode_ci --default-time-zone=Asia/Tokyo
+
+volumes:
+  db_data:
