@@ -1,0 +1,28 @@
+{
+  "name": "Fastapi template app container", // VScodeがコンテナに接続したときのタイトルを自由に設定
+  "dockerComposeFile": "../docker-compose.yml", // docker-conpose.ymlファイルを指定
+  "service": "app", // docker-conpose.ymlファイル内に記載したサービス名を指定
+  "workspaceFolder": "/app", // VScode接続時に開くフォルダを指定
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        // コンテナ作成時にインストールする拡張機能を記載
+        "ms-python.python", // python
+        "esbenp.prettier-vscode", // prettier
+        "charliermarsh.ruff", // ruff
+        "be5invis.toml" // toml
+      ],
+      "settings": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.formatOnSave": true,
+        "[python]": {
+          "editor.defaultFormatter": "charliermarsh.ruff",
+          "editor.formatOnSave": true,
+          "editor.codeActionsOnSave": {
+            "source.organizeImports": "explicit"
+          }
+        }
+      }
+    }
+  }
+}
