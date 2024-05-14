@@ -11,7 +11,8 @@ ENV PYTHONUNBUFFERED=1 \
     \
     POETRY_HOME="/opt/poetry" \
     POETRY_VIRTUALENVS_CREATE=false \
-    PYSETUP_PATH="/opt/pysetup"
+    PYSETUP_PATH="/opt/pysetup" \
+
 
 ENV PATH="$POETRY_HOME/bin:$PATH"
 
