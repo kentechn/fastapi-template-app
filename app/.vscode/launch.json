@@ -9,14 +9,7 @@
       "type": "debugpy",
       "request": "launch",
       "module": "uvicorn",
-      "args": [
-        "src.main:app",
-        "--reload",
-        "--host",
-        "0.0.0.0",
-        "--log-config",
-        "log_config.yml"
-      ],
+      "args": ["src.main:app", "--reload", "--host", "0.0.0.0"],
       "justMyCode": false
     }
   ]

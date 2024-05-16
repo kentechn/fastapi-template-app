@@ -8,11 +8,6 @@ from src.api.endpoints import tasks
 app = FastAPI()
 
 
-@app.get("/")
-def read_root():
-  return {"Hello": "World"}
-
-
 app.include_router(tasks.router, tags=["Tasks"], prefix="/tasks")
 
 if __name__ == "__main__":
