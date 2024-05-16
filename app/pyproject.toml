@@ -29,7 +29,6 @@ target-version = "py311"
 # 今回はPyflakes(F), isort(I), flake8-annotations(ANN)を設定
 # その他ルールやルール詳細は公式から確認してください。
 # https://docs.astral.sh/ruff/rules/
-select = ["F", "I", "ANN"]
-
+select = ["F", "I", "ANN", "E"]
 # 不要なルールを指定
-ignore = ["ANN401"]
+ignore = ["E501",  "ANN101"]
