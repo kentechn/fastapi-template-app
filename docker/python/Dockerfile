@@ -15,6 +15,8 @@ ENV PYTHONUNBUFFERED=1 \
 
 ENV PATH="$POETRY_HOME/bin:$PATH"
 
+ENV PYTHONPATH="${PYTHONPATH}:/app/src"
+
 RUN apt-get update \
     && apt-get install --no-install-recommends -y curl \
     && apt-get clean \

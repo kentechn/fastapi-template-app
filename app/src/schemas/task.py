@@ -1,4 +1,10 @@
-from pydantic import BaseModel
+from datetime import datetime
+from enum import Enum
+from typing import Annotated
+
+from fastapi import Query
+from pydantic import BaseModel, ConfigDict
+from pydantic.alias_generators import to_camel
 
 from src.schemas.base import GetListQueryParams, ListResponse
 
@@ -11,15 +17,21 @@ class BaseTask(BaseModel):
 class TaskInDB(BaseTask):
   id: int
   is_completed: bool
+  created_at: datetime
+  updated_at: datetime
   """データベース内のタスクを表すクラス"""
 
 
 class CreateTask(BaseTask):
+  model_config = ConfigDict(alias_generator=to_camel)
+
   is_completed: bool = False
   """タスクの作成情報を表すクラス"""
 
 
 class UpdateTask(BaseTask):
+  model_config = ConfigDict(alias_generator=to_camel)
+
   is_completed: bool
   """タスクの更新情報を表すクラス"""
 
@@ -30,6 +42,8 @@ class DeleteTasks(BaseModel):
 
 
 class TaskResponse(BaseTask):
+  model_config = ConfigDict(alias_generator=to_camel)
+
   id: int
   is_completed: bool
   """タスクのレスポンス情報を表すクラス"""
@@ -45,13 +59,17 @@ class TaskQueryParams(GetListQueryParams):
   """GETリクエストのクエリパラメータを表すクラス"""
 
 
-# TaskResponseをインスタンス化してデータを追加
-# task_response = TaskResponse(
-#   limit=10,
-#   offset=0,
-#   total_count=2,
-#   data=[
-#     Task(task_id=1, content="Task 1", is_completed=False),
-#     Task(task_id=2, content="Task 2", is_completed=True),
-#   ],
-# )
+class TodoSortFieldEnum(Enum):
+  created_at = "created_at"
+  content = "content"
+
+
+class GetTodoListQueryParams(GetListQueryParams):
+  model_config = ConfigDict(alias_generator=to_camel)
+
+  sort_field: Annotated[TodoSortFieldEnum, Query(default=TodoSortFieldEnum.created_at)]
+  content: Annotated[str | None, Query(max_length=50, default=None)]
+  is_completed: Annotated[bool, Query(default=False)]
+  # created_at: Annotated[str | None, Query] = None
+  # updated_at: Annotated[str | None, Query] = None
+  """GETリクエストのクエリパラメータを表すクラス"""

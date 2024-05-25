@@ -1,19 +1,38 @@
-from typing import Generic, TypeVar
+from enum import Enum
+from typing import Annotated, Generic, TypeVar
 
 from fastapi import Query
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
+from pydantic.alias_generators import to_camel
 
 T = TypeVar("T")
 
 
 class ListResponse(BaseModel, Generic[T]):
-  limit: int
-  offset: int
+  model_config = ConfigDict(alias_generator=to_camel)
+
+  size: int
+  page: int
   total_count: int
   data: list[T]
 
 
+class SortOrderEnum(Enum):
+  asc = "asc"
+  desc = "desc"
+
+
 class GetListQueryParams(BaseModel):
-  limit: int = Query(100, description="取得するタスクの最小, 最大数", ge=1, le=100)
-  offset: int = Query(0, description="取得するタスクのオフセット", ge=0)
+  size: Annotated[
+    int,
+    Query(description="取得するデータの最大取得数", ge=1, le=100, default=10),
+  ]
+  page: Annotated[
+    int,
+    Query(description="取得するタスクのページ数", ge=1, default=1),
+  ]
+  sort_order: Annotated[
+    SortOrderEnum,
+    Query(description="取得するタスクのソート順", default=SortOrderEnum.desc),
+  ]
   """GETリクエストのクエリパラメータを表すクラス"""
