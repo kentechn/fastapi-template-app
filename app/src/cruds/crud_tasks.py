@@ -1,5 +1,5 @@
 from fastapi.encoders import jsonable_encoder
-from sqlalchemy import select
+from sqlalchemy import func, select
 
 from src.api.dependencies import Session
 from src.models.task import Task
@@ -7,12 +7,13 @@ from src.schemas.task import (
   CreateTask,
   GetTodoListQueryParams,
   TaskResponse,
-  TasksResponse,
   UpdateTask,
 )
 
 
-def get_db_obj_list(db: Session, query_params: GetTodoListQueryParams) -> TasksResponse:
+def get_db_obj_list(
+  db: Session, query_params: GetTodoListQueryParams
+) -> tuple[list[Task], int]:
   """
   データベースからタスクのリストを取得します。
 
@@ -54,22 +55,18 @@ def get_db_obj_list(db: Session, query_params: GetTodoListQueryParams) -> TasksR
       else:
         stmt = stmt.order_by(Task.is_completed.desc())
 
-    size = query_params.size
-    page = query_params.page
+    total_count_stmt = select(func.count()).select_from(stmt.subquery())
+    total_count = db.execute(total_count_stmt).scalar()
 
-    stmt = stmt.limit(size).offset((page - 1) * size)
+    limit = query_params.limit
+    offset = query_params.offset
+
+    stmt = stmt.limit(limit).offset(offset)
 
     # Add more conditions for other fields if needed
   tasks = db.execute(stmt).scalars().all()
 
-  data = [
-    TaskResponse(id=task.id, isCompleted=task.is_completed, content=task.content)
-    for task in tasks
-  ]
-
-  res_data = TasksResponse(page=1, size=2, totalCount=2, data=data)
-
-  return res_data
+  return tasks, total_count
 
 
 def get_db_obj_by_id(db: Session, id: int) -> Task | None:

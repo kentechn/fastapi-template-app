@@ -3,7 +3,7 @@ from enum import Enum
 from typing import Annotated
 
 from fastapi import Query
-from pydantic import BaseModel, ConfigDict
+from pydantic import AliasChoices, BaseModel, ConfigDict, Field
 from pydantic.alias_generators import to_camel
 
 from src.schemas.base import GetListQueryParams, ListResponse
@@ -20,6 +20,8 @@ class TaskInDB(BaseTask):
   created_at: datetime
   updated_at: datetime
   """データベース内のタスクを表すクラス"""
+
+  model_config = ConfigDict(from_attributes=True)
 
 
 class CreateTask(BaseTask):
@@ -45,7 +47,9 @@ class TaskResponse(BaseTask):
   model_config = ConfigDict(alias_generator=to_camel)
 
   id: int
-  is_completed: bool
+  is_completed: bool = Field(
+    validation_alias=AliasChoices("is_completed", "isCompleted")
+  )
   """タスクのレスポンス情報を表すクラス"""
 
 
@@ -54,17 +58,12 @@ class TasksResponse(ListResponse[TaskResponse]):
   """タスクのリストレスポンス情報を表すクラス"""
 
 
-class TaskQueryParams(GetListQueryParams):
-  pass
-  """GETリクエストのクエリパラメータを表すクラス"""
-
-
 class TodoSortFieldEnum(Enum):
   created_at = "created_at"
   content = "content"
 
 
-class GetTodoListQueryParams(GetListQueryParams):
+class GetTasksQueryParams(GetListQueryParams):
   model_config = ConfigDict(alias_generator=to_camel)
 
   sort_field: Annotated[TodoSortFieldEnum, Query(default=TodoSortFieldEnum.created_at)]

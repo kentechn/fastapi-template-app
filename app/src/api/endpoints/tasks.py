@@ -5,6 +5,7 @@ from src.cruds import crud_tasks
 from src.schemas.task import (
   CreateTask,
   GetTodoListQueryParams,
+  TaskInDB,
   TaskResponse,
   TasksResponse,
   UpdateTask,
@@ -29,7 +30,18 @@ def read_tasks(
   """
   print(query_params)
 
-  return crud_tasks.get_db_obj_list(db, query_params)
+  data, total_count = crud_tasks.get_db_obj_list(db, query_params)
+
+  tasks = [TaskResponse(**item.__dict__) for item in data]
+
+  res_data = TasksResponse(
+    limit=query_params.limit,
+    offset=query_params.offset,
+    totalCount=total_count,
+    data=tasks,
+  )
+
+  return res_data
 
 
 @router.get("/{task_id}", response_model=TaskResponse)

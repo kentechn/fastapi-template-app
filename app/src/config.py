@@ -6,11 +6,11 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
   mysql_host: str = os.getenv("MYSQL_HOST")
-  mysql_port: int = os.getenv("MYSQL_PORT")
+  mysql_port: str = os.getenv("MYSQL_PORT")
   mysql_user: str = os.getenv("MYSQL_USER")
   mysql_password: str = os.getenv("MYSQL_PASSWORD")
   mysql_db: str = os.getenv("MYSQL_DATABASE")
-  mysql_db_url: str = os.getenv("MYSQL_DATABASE_URL")
+  mysql_db_url: str = f"mysql+pymysql://{mysql_user}:{mysql_password}@{mysql_host}:{mysql_port}/{mysql_db}"
 
 
 @lru_cache
