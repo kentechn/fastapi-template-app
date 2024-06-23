@@ -3,6 +3,7 @@ import sys
 from typing import Any
 
 import uvicorn
+from debug_toolbar.middleware import DebugToolbarMiddleware
 from fastapi import Depends, FastAPI
 from fastapi.exceptions import HTTPException, RequestValidationError
 
@@ -18,7 +19,11 @@ setup_logging()
 
 logger = logging.getLogger(__name__)
 
-app = FastAPI()
+app = FastAPI(debug=True)
+app.add_middleware(
+  DebugToolbarMiddleware,
+  panels=["debug_toolbar.panels.sqlalchemy.SQLAlchemyPanel"],
+)
 
 
 app.add_exception_handler(RequestValidationError, custom_validation_exception_handler)

@@ -2,21 +2,32 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from src.api.dependencies import Session, get_db
 from src.cruds import crud_tasks
+from src.schemas.base import PagingQueryIn
 from src.schemas.task import (
   CreateTask,
-  GetTodoListQueryParams,
-  TaskInDB,
   TaskResponse,
+  TasksQueryParams,
   TasksResponse,
+  TasksSortQueryIn,
   UpdateTask,
 )
+from src.services.task import TaskService, task_service
 
 router = APIRouter()
 
 
+# Dependency Injection
+def get_task_service() -> TaskService:
+  return task_service
+
+
 @router.get("/", response_model=TasksResponse, response_model_exclude_unset=True)
 def read_tasks(
-  query_params: GetTodoListQueryParams = Depends(), db: Session = Depends(get_db)
+  page_params: PagingQueryIn = Depends(),
+  sort_params: TasksSortQueryIn = Depends(),
+  query_params: TasksQueryParams = Depends(),
+  db: Session = Depends(get_db),
+  service: TaskService = Depends(get_task_service),
 ) -> TasksResponse:
   """
   プロバイダされたクエリパラメータに基づいて、タスクのリストを取得します。
@@ -28,20 +39,7 @@ def read_tasks(
   returns:
   - データベースから取得したタスクのリストを含むTasksResponseオブジェクトです。
   """
-  print(query_params)
-
-  data, total_count = crud_tasks.get_db_obj_list(db, query_params)
-
-  tasks = [TaskResponse(**item.__dict__) for item in data]
-
-  res_data = TasksResponse(
-    limit=query_params.limit,
-    offset=query_params.offset,
-    totalCount=total_count,
-    data=tasks,
-  )
-
-  return res_data
+  return service.get_tasks_list(db, page_params, sort_params, query_params)
 
 
 @router.get("/{task_id}", response_model=TaskResponse)

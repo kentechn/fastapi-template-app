@@ -3,16 +3,21 @@ from sqlalchemy import func, select
 
 from src.api.dependencies import Session
 from src.models.task import Task
+from src.schemas.base import PagingQueryIn
 from src.schemas.task import (
   CreateTask,
-  GetTodoListQueryParams,
   TaskResponse,
+  TasksQueryParams,
+  TasksSortQueryIn,
   UpdateTask,
 )
 
 
 def get_db_obj_list(
-  db: Session, query_params: GetTodoListQueryParams
+  db: Session,
+  page_params: PagingQueryIn,
+  sort_params: TasksSortQueryIn,
+  query_params: TasksQueryParams,
 ) -> tuple[list[Task], int]:
   """
   データベースからタスクのリストを取得します。
@@ -24,46 +29,19 @@ def get_db_obj_list(
     TasksResponse: タスクのリストを含むレスポンスオブジェクト
   """
   stmt = select(Task)
-  if query_params.is_completed is not None:
-    stmt = stmt.where(Task.is_completed == query_params.is_completed)
+  stmt = query_params.apply_to_query(stmt)
 
-  if query_params.sort_field is not None:
-    sort_field = query_params.sort_field
-    sort_order = query_params.sort_order
+  # Get total count
+  total_count_stmt = select(func.count()).select_from(stmt.subquery())
+  total_count = db.execute(total_count_stmt).scalar()
 
-    if sort_field == "content":
-      if sort_order == "asc":
-        stmt = stmt.order_by(Task.content.asc())
-      else:
-        stmt = stmt.order_by(Task.content.desc())
+  # Apply sorting
+  stmt = sort_params.apply_to_query(stmt)
 
-    elif sort_field == "created_at":
-      if sort_order == "asc":
-        stmt = stmt.order_by(Task.created_at.asc())
-      else:
-        stmt = stmt.order_by(Task.created_at.desc())
+  # Apply paging
+  stmt = page_params.apply_to_query(stmt)
 
-    elif sort_field == "updated_at":
-      if sort_order == "asc":
-        stmt = stmt.order_by(Task.updated_at.asc())
-      else:
-        stmt = stmt.order_by(Task.updated_at.desc())
-
-    elif sort_field == "is_completed":
-      if sort_order == "asc":
-        stmt = stmt.order_by(Task.is_completed.asc())
-      else:
-        stmt = stmt.order_by(Task.is_completed.desc())
-
-    total_count_stmt = select(func.count()).select_from(stmt.subquery())
-    total_count = db.execute(total_count_stmt).scalar()
-
-    limit = query_params.limit
-    offset = query_params.offset
-
-    stmt = stmt.limit(limit).offset(offset)
-
-    # Add more conditions for other fields if needed
+  # Add more conditions for other fields if needed
   tasks = db.execute(stmt).scalars().all()
 
   return tasks, total_count

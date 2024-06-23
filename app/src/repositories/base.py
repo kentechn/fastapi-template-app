@@ -2,17 +2,26 @@ from typing import Generic, Type, TypeVar
 
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
-from sqlalchemy.future import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from src.models.base import Base
+from src.schemas.base import ModelQueryParams, PagingQueryIn, SortQueryIn
+
+# from src.schemas.base import PagingQueryIn, SortQueryIn
 
 ModelType = TypeVar("ModelType", bound=Base)
 CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)
 UpdateSchemaType = TypeVar("UpdateSchemaType", bound=BaseModel)
+SortQueryInType = TypeVar("SortQueryInType", bound=SortQueryIn)
+ModelQueryParamsType = TypeVar("ModelQueryParamsType", bound=ModelQueryParams)
 
 
-class BaseRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
+class BaseRepository(
+  Generic[
+    ModelType, CreateSchemaType, UpdateSchemaType, SortQueryInType, ModelQueryParamsType
+  ]
+):
   def __init__(self, model: Type[ModelType]) -> None:
     self.model = model
 
@@ -21,10 +30,29 @@ class BaseRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
     return result.scalar_one_or_none()
 
   def get_db_obj_list(
-    self, db: Session, offset: int = 0, limit: int = 10
+    self,
+    db: Session,
+    page_params: PagingQueryIn,
+    sort_params: SortQueryInType,
+    query_params: ModelQueryParamsType,
   ) -> list[ModelType]:
-    result = db.execute(select(self.model).offset(offset).limit(limit))
-    return result.scalars().all()
+    stmt = select(self.model)
+    stmt = query_params.apply_to_query(stmt)
+
+    # Get total count
+    total_count_stmt = select(func.count()).select_from(stmt.subquery())
+    total_count = db.execute(total_count_stmt).scalar()
+
+    # Apply sorting
+    stmt = sort_params.apply_to_query(stmt)
+
+    # Apply paging
+    stmt = page_params.apply_to_query(stmt)
+
+    # Add more conditions for other fields if needed
+    data = db.execute(stmt).scalars().all()
+
+    return data, total_count
 
   def create(self, db: Session, obj_in: CreateSchemaType) -> ModelType:
     obj_in_data = obj_in.model_dump(by_alias=False)
