@@ -1,7 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from typing import Any
+
+from fastapi import APIRouter, Depends, Request, status
 
 from src.api.dependencies import Session, get_db
-from src.cruds import crud_tasks
+from src.core.logger import logger
 from src.schemas.base import PagingQueryIn
 from src.schemas.task import (
   CreateTask,
@@ -43,7 +45,11 @@ def read_tasks(
 
 
 @router.get("/{task_id}", response_model=TaskResponse)
-def read_task(task_id: int, db: Session = Depends(get_db)) -> TaskResponse:
+def read_task(
+  task_id: int,
+  db: Session = Depends(get_db),
+  service: TaskService = Depends(get_task_service),
+) -> TaskResponse:
   """
   指定されたタスクIDに基づいてデータベースからタスクを取得します。
 
@@ -54,19 +60,15 @@ def read_task(task_id: int, db: Session = Depends(get_db)) -> TaskResponse:
   Returns:
     TaskResponse: タスクのレスポンスモデル
   """
-  task = crud_tasks.get_db_obj_by_id(db, task_id)
-
-  if task is None:
-    raise HTTPException(
-      status_code=404,
-      detail="タスクが見つかりませんでした。",
-    )
-
-  return TaskResponse(id=task.id, isCompleted=task.is_completed, content=task.content)
+  return service.get_task(db, task_id)
 
 
 @router.post("/", response_model=TaskResponse, status_code=status.HTTP_201_CREATED)
-def create_task(task: CreateTask, db: Session = Depends(get_db)) -> TaskResponse:
+def create_task(
+  task: CreateTask,
+  db: Session = Depends(get_db),
+  service: TaskService = Depends(get_task_service),
+) -> TaskResponse:
   """
   新しいタスクをデータベースに作成します。
 
@@ -78,11 +80,16 @@ def create_task(task: CreateTask, db: Session = Depends(get_db)) -> TaskResponse
     TaskResponse: 作成されたタスクの情報が含まれるオブジェクト
   """
   # Logic to create a new task in the database
-  return crud_tasks.create_db_obj(db, task)
+  return service.create_task(db, task)
 
 
 @router.put("/{task_id}", status_code=status.HTTP_204_NO_CONTENT)
-def update_task(task_id: int, task: UpdateTask, db: Session = Depends(get_db)) -> None:
+def update_task(
+  task_id: int,
+  task: UpdateTask,
+  db: Session = Depends(get_db),
+  service: TaskService = Depends(get_task_service),
+) -> None:
   """
   プロバイダされたタスクIDに基づいて、タスクを更新します。
 
@@ -97,19 +104,16 @@ def update_task(task_id: int, task: UpdateTask, db: Session = Depends(get_db)) -
   Raises:
   - HTTPException(404): 指定されたタスクIDが見つからない場合に発生します。
   """
-  target_task = crud_tasks.get_db_obj_by_id(db, task_id)
 
-  if target_task is None:
-    raise HTTPException(
-      status_code=404,
-      detail="タスクが見つかりませんでした。",
-    )
-
-  crud_tasks.update_db_obj(db, target_task, task)
+  service.update_task(db, task_id, task)
 
 
 @router.delete("/{task_id}", status_code=status.HTTP_204_NO_CONTENT)
-def real_delete_task(task_id: int, db: Session = Depends(get_db)) -> None:
+def real_delete_task(
+  task_id: int,
+  db: Session = Depends(get_db),
+  service: TaskService = Depends(get_task_service),
+) -> None:
   """
   指定されたタスクをデータベースから完全に削除します。
 
@@ -123,12 +127,4 @@ def real_delete_task(task_id: int, db: Session = Depends(get_db)) -> None:
   Returns:
     None
   """
-  target_task = crud_tasks.get_db_obj_by_id(db, task_id)
-
-  if target_task is None:
-    raise HTTPException(
-      status_code=404,
-      detail="タスクが見つかりませんでした。",
-    )
-
-  crud_tasks.real_delete_db_obj(db, target_task)
+  service.delete_task(db, task_id)

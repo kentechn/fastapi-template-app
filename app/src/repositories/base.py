@@ -25,10 +25,6 @@ class BaseRepository(
   def __init__(self, model: Type[ModelType]) -> None:
     self.model = model
 
-  def get_db_obj_by_id(self, db: Session, id: int) -> ModelType | None:
-    result = db.execute(select(self.model).filter(self.model.id == id))
-    return result.scalar_one_or_none()
-
   def get_db_obj_list(
     self,
     db: Session,
@@ -53,6 +49,10 @@ class BaseRepository(
     data = db.execute(stmt).scalars().all()
 
     return data, total_count
+
+  def get_db_obj_by_id(self, db: Session, id: int) -> ModelType | None:
+    result = db.execute(select(self.model).filter(self.model.id == id))
+    return result.scalar_one_or_none()
 
   def create(self, db: Session, obj_in: CreateSchemaType) -> ModelType:
     obj_in_data = obj_in.model_dump(by_alias=False)

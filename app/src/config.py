@@ -12,7 +12,12 @@ class Settings(BaseSettings):
   mysql_db: str = os.getenv("MYSQL_DATABASE")
   mysql_db_url: str = f"mysql+pymysql://{mysql_user}:{mysql_password}@{mysql_host}:{mysql_port}/{mysql_db}"
 
+  app_root_path: str = "/api"
+
 
 @lru_cache
 def get_settings() -> Settings:
   return Settings()
+
+
+settings = get_settings()

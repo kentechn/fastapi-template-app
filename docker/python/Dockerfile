@@ -27,3 +27,6 @@ RUN curl -sSL https://install.python-poetry.org | python -
 COPY ./app/pyproject.toml ./app/poetry.lock  ./
 
 RUN poetry install --no-root
+
+# uvicorn起動
+ENTRYPOINT ["python", "-m", "uvicorn", "src.main:app", "--host", "0.0.0.0", "--reload"]

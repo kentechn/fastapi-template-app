@@ -19,4 +19,4 @@ def test_get_tasks_api(test_client: TestClient, insert_tasks: list[Task]) -> Non
   print(tasks)
 
   assert response.status_code == 200
-  assert response.json() == {"limit": 10, "offset": 0, "data": tasks, "totalCount": 3}
+  assert response.json() == {"size": 10, "page": 1, "data": tasks, "totalCount": 3}

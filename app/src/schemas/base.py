@@ -2,7 +2,7 @@ from enum import Enum
 from typing import Any, Generic, TypeVar
 
 from fastapi import Query
-from pydantic import BaseModel, ConfigDict, field_validator
+from pydantic import BaseModel, ConfigDict
 from pydantic.alias_generators import to_camel
 from sqlalchemy import Select, asc, desc
 

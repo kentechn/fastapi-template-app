@@ -1,7 +1,4 @@
-from typing import Any
-
-from fastapi import Request, status
-from fastapi.encoders import jsonable_encoder
+from fastapi import Request
 from fastapi.exception_handlers import (
   http_exception_handler,
   request_validation_exception_handler,
@@ -17,7 +14,7 @@ class ApiException(Exception):
 
 async def custom_http_exception_handler(
   request: Request, exc: HTTPException
-) -> JSONResponse:  # noqa: ANN401
+) -> JSONResponse:
   print(f"OMG! An HTTP error!: {repr(exc)}")
   return await http_exception_handler(request, exc)
 

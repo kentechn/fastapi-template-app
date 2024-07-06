@@ -7,6 +7,8 @@ services:
       dockerfile: ./docker/python/Dockerfile
     volumes:
       - ./app:/app
+    ports:
+      - 8000:8000
     tty: true
     depends_on:
       db:
