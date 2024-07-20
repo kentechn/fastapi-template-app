@@ -1,0 +1,17 @@
+{
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "python.defaultInterpreterPath": "/usr/local/bin/python",
+  "editor.formatOnSave": true,
+  // "python.autoComplete.extraPaths": ["usr/local/lib/python3.11/site-packages"],
+  // "python.analysis.extraPaths": ["usr/local/lib/python3.11/site-packages"],
+  "[python]": {
+    "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.codeActionsOnSave": {
+      "source.fixAll": "never",
+      "source.organizeImports": "explicit"
+    }
+  },
+  "python.testing.pytestArgs": ["src"],
+  "python.testing.unittestEnabled": false,
+  "python.testing.pytestEnabled": true
+}

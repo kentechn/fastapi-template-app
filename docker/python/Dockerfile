@@ -11,10 +11,11 @@ ENV PYTHONUNBUFFERED=1 \
     \
     POETRY_HOME="/opt/poetry" \
     POETRY_VIRTUALENVS_CREATE=false \
-    PYSETUP_PATH="/opt/pysetup" \
-
+    PYSETUP_PATH="/opt/pysetup"
 
 ENV PATH="$POETRY_HOME/bin:$PATH"
+
+ENV PYTHONPATH="${PYTHONPATH}:/app/src"
 
 RUN apt-get update \
     && apt-get install --no-install-recommends -y curl \
@@ -26,3 +27,6 @@ RUN curl -sSL https://install.python-poetry.org | python -
 COPY ./app/pyproject.toml ./app/poetry.lock  ./
 
 RUN poetry install --no-root
+
+# uvicorn起動
+ENTRYPOINT ["python", "-m", "uvicorn", "src.main:app", "--host", "0.0.0.0", "--reload"]

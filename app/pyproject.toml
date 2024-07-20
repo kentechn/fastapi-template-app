@@ -7,8 +7,41 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.11"
+fastapi = "^0.111.0"
+uvicorn = {extras = ["standard"], version = "^0.29.0"}
+sqlalchemy = "^2.0.30"
+pymysql = {extras = ["rsa"], version = "^1.1.0"}
+alembic = "^1.13.1"
+pydantic-settings = "^2.2.1"
+structlog = "^24.2.0"
 
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.4.4"
+pytest = "^8.2.0"
+pytest-mysql = "^3.0.0"
+fastapi-debug-toolbar = "^0.6.3"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+
+# pyproject.toml or ruff.toml
+# ruffの設定
+[tool.ruff]
+line-length = 88
+indent-width = 2
+
+target-version = "py311"
+
+exclude = ["migration"]
+
+[tool.ruff.lint]
+# 適用するルールを指定
+# 今回はPyflakes(F), isort(I), flake8-annotations(ANN)を設定
+# その他ルールやルール詳細は公式から確認してください。
+# https://docs.astral.sh/ruff/rules/
+select = ["F", "I", "ANN", "E"]
+# 不要なルールを指定
+ignore = ["E501",  "ANN101", "ANN401"]
