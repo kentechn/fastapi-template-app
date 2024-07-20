@@ -17,7 +17,6 @@ def _get_log_level() -> int:
   else:
     return logging.WARNING
 
-
 def setup_logging() -> None:
   log_level = _get_log_level()
 
