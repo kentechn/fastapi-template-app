@@ -14,8 +14,8 @@ class Task(Base, CommonColumns):
   )
   content: Mapped[str] = mapped_column(Text, comment="タスク内容")
 
-  user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
-  user: Mapped["User"] = relationship(back_populates="tasks")
+  create_user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
+  create_user = relationship("User", back_populates="tasks")
 
 
   def __repr__(self) -> str:

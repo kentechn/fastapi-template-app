@@ -16,8 +16,8 @@ class User(Base, CommonColumns):
   username: Mapped[str_255] = mapped_column(comment="ユーザー名")
   hashed_password: Mapped[str_255] = mapped_column(comment="ハッシュ化パスワード")
 
-  tasks: Mapped[List["Task"]] = relationship(
-         back_populates="user", cascade="all, delete-orphan"
+  tasks = relationship(
+        "Task", back_populates="create_user", cascade="all, delete-orphan"
      )
   
   def __repr__(self) -> str:
