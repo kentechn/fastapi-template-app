@@ -1,5 +1,5 @@
-from sqlalchemy import Boolean, Text
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import Boolean, Text, ForeignKey
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.models.base import Base, CommonColumns, int_pk
 
@@ -13,3 +13,10 @@ class Task(Base, CommonColumns):
     Boolean, default=False, comment="完了フラグ"
   )
   content: Mapped[str] = mapped_column(Text, comment="タスク内容")
+
+  user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
+  user: Mapped["User"] = relationship(back_populates="tasks")
+
+
+  def __repr__(self) -> str:
+    return f"Task(id={self.id!r}, content={self.content!r})"

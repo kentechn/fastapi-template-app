@@ -15,7 +15,7 @@ ENV PYTHONUNBUFFERED=1 \
 
 ENV PATH="$POETRY_HOME/bin:$PATH"
 
-ENV PYTHONPATH="${PYTHONPATH}:/app/src"
+ENV PYTHONPATH="/app"
 
 RUN apt-get update \
     && apt-get install --no-install-recommends -y curl \
@@ -29,4 +29,4 @@ COPY ./app/pyproject.toml ./app/poetry.lock  ./
 RUN poetry install --no-root
 
 # uvicorn起動
-ENTRYPOINT ["python", "-m", "uvicorn", "src.main:app", "--host", "0.0.0.0", "--reload"]
+# ENTRYPOINT ["python", "-m", "uvicorn", "src.main:app", "--host", "0.0.0.0", "--reload"]
