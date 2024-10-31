@@ -1,9 +1,6 @@
-from typing import Any
-
-from fastapi import APIRouter, Depends, Request, status
+from fastapi import APIRouter, Depends, status
 
 from src.api.dependencies import Session, get_db
-from src.core.logger import logger
 from src.schemas.base import PagingQueryIn
 from src.schemas.task import (
   CreateTask,
