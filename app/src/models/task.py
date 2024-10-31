@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Text, ForeignKey
+from sqlalchemy import Boolean, ForeignKey, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.models.base import Base, CommonColumns, int_pk
@@ -16,7 +16,6 @@ class Task(Base, CommonColumns):
 
   create_user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
   create_user = relationship("User", back_populates="tasks")
-
 
   def __repr__(self) -> str:
     return f"Task(id={self.id!r}, content={self.content!r})"

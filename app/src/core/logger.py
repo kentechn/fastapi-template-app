@@ -1,110 +1,67 @@
-# structlogの設定
 import logging
 import os
 from logging.config import dictConfig
-from typing import Any
-
-import structlog
-
-log_level = os.environ.get("LOG_LEVEL", "DEBUG").upper()
 
 
-logging.basicConfig(format="%(message)s", level=log_level)
-
-
-common_processors = [
-  structlog.processors.TimeStamper(fmt="%Y-%m-%d %H:%M.%S", utc=False),
-  structlog.stdlib.add_log_level,
-  structlog.stdlib.PositionalArgumentsFormatter(),
-]
-
-
-def extract_from_record(_: Any, __: Any, event_dict: dict) -> dict:
+def _get_log_level() -> int:
   """
-  Extract thread and process names and add them to the event dict.
+  DEBUG環境変数に基づいてログレベルを取得します
+
+  Returns:
+    int: ロギングに使用するログレベル
+
   """
-  record = event_dict["_record"]
-  event_dict["thread_name"] = record.thread
-  event_dict["process_name"] = record.process
-  return event_dict
+  debug_env = os.getenv("DEBUG", "False").lower()
+  if debug_env in ["1", "true", "yes"]:
+    return logging.DEBUG
+  else:
+    return logging.WARNING
 
+def setup_logging() -> None:
+  log_level = _get_log_level()
 
-log_config = {
-  "version": 1,
-  "disable_existing_loggers": False,
-  "formatters": {
-    "json": {
-      "()": structlog.stdlib.ProcessorFormatter,
-      "processors": [
-        extract_from_record,
-        structlog.stdlib.ProcessorFormatter.remove_processors_meta,
-        structlog.processors.JSONRenderer(),
-      ],
-      "foreign_pre_chain": common_processors,
+  logging_config = {
+    "version": 1,
+    "formatters": {
+      "default": {
+        "format": "[%(levelname)s] %(asctime)s [%(processName)s: %(process)d] "
+        "[%(threadName)s: %(thread)d] "
+        "%(name)s:%(lineno)d %(funcName)s: %(message)s",
+      },
+      "uvicorn": {
+        "()": "uvicorn.logging.DefaultFormatter",
+        "format": "%(levelprefix)s %(asctime)s - %(message)s",
+        "datefmt": "%Y-%m-%d %H:%M:%S",
+      },
     },
-    "colored": {
-      "()": structlog.stdlib.ProcessorFormatter,
-      "processors": [
-        extract_from_record,
-        structlog.stdlib.ProcessorFormatter.remove_processors_meta,
-        structlog.processors.JSONRenderer(),
-      ],
-      "foreign_pre_chain": common_processors,
+    "handlers": {
+      "default": {
+        "class": "logging.StreamHandler",
+        "formatter": "default",
+        "stream": "ext://sys.stderr",
+      },
+      "uvicorn.access": {
+        "class": "logging.StreamHandler",
+        "formatter": "uvicorn",
+      },
     },
-  },
-  "handlers": {
-    "default": {
-      "class": "logging.StreamHandler",
-      "formatter": "colored",
+    "loggers": {
+      "": {
+        "handlers": ["default"],
+        "level": log_level,
+        "propagate": False,
+      },
+      "uvicorn.error": {
+        "handlers": ["default"],
+        "level": log_level,
+        "propagate": False,
+      },
+      "uvicorn.access": {
+        "handlers": ["uvicorn.access"],
+        "level": "INFO",
+        "propagate": False,
+      },
     },
-    "file": {
-      "class": "logging.handlers.WatchedFileHandler",
-      "filename": "test.log",
-      "formatter": "json",
-    },
-  },
-  "loggers": {
-    "": {
-      "handlers": ["default"],
-      "level": log_level,
-      "propagate": False,
-    },
-    "uvicorn.error": {
-      "handlers": ["default"],
-      "level": "INFO",
-      "propagate": False,
-    },
-    "uvicorn.access": {
-      "handlers": ["default"],
-      "level": "INFO",
-      "propagate": False,
-    },
-  },
-}
+  }
 
-dictConfig(log_config)
-
-
-processors = common_processors + [
-  structlog.processors.CallsiteParameterAdder(
-    [
-      structlog.processors.CallsiteParameter.FILENAME,
-      structlog.processors.CallsiteParameter.FUNC_NAME,
-      structlog.processors.CallsiteParameter.LINENO,
-    ]
-  ),
-  structlog.processors.dict_tracebacks,
-  structlog.processors.StackInfoRenderer(),
-  structlog.stdlib.ProcessorFormatter.wrap_for_formatter,
-]
-
-structlog.configure(
-  processors=processors,
-  context_class=dict,
-  logger_factory=structlog.stdlib.LoggerFactory(),
-  cache_logger_on_first_use=True,
-)
-
-
-# ログインスタンスの作成
-logger = structlog.get_logger()
+  dictConfig(logging_config)
