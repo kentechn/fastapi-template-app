@@ -1,14 +1,18 @@
 services:
   app:
-    container_name: fastapi-template-app
+    extends:
+      file: compose.base.yml
+      service: app
+    container_name: fastapi_template_app_dev
+    image: fastapi_template_app_dev
     build:
       context: .
       dockerfile: ./docker/python/Dockerfile
+      target: dev
     volumes:
       - ./app:/app
     ports:
       - 8000:8000
-    tty: true
     depends_on:
       db:
         condition: service_started # dbが起動、動作確認後にコンテナ起動
@@ -32,3 +36,4 @@ services:
 
 volumes:
   db_data:
+    driver: local

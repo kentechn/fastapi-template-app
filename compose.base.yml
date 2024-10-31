@@ -1,0 +1,8 @@
+version: '3'
+services:
+  app:
+    container_name: fastapi-template-app
+    build:
+      context: .
+      dockerfile: ./docker/python/Dockerfile
+    tty: true
