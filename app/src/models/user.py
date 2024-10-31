@@ -5,7 +5,7 @@ from src.models.base import Base, CommonColumns, int_pk, str_255
 
 from typing import List
 
-# Taskテーブル
+# Userテーブル
 class User(Base, CommonColumns):
   __tablename__ = "user"
 
