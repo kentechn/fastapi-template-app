@@ -13,3 +13,18 @@ This is a template app for fastapi apps. I built it to be the base for a new Fas
 - alembic: "^1.13.1" - migration tool
 - ruff: "^0.4.4" Linter/Formatter tool
 - pytest: "^8.2.0" - Python testing tool
+
+## Setup
+```bash
+# dev
+docker compose -f .\compose.dev.yml up -d
+
+# prod
+docker compose -f .\compose.prod.yml up -d
+```
+
+## Migration
+```bash
+docker compose -f .\compose.dev.yml run --rm app ./alembic_upgrade.sh
+
+```
